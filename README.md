@@ -8,6 +8,6 @@ Assume your lost in the mountains and want to find your way back:
 
 
 Ressources:
-https://www.swisstopo.admin.ch/de/geodata/height/dhm25.html
-https://www.swisstopo.admin.ch/de/geodata/height/alti3d.html
-https://api3.geo.admin.ch/services/sdiservices.html?highlight=reverse#profile
+- https://www.swisstopo.admin.ch/de/geodata/height/dhm25.html
+- https://www.swisstopo.admin.ch/de/geodata/height/alti3d.html
+- https://api3.geo.admin.ch/services/sdiservices.html?highlight=reverse#profile
