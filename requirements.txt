@@ -1,0 +1,6 @@
+pandas~=1.2.2
+pathlib~=1.0.1
+requests~=2.25.1
+flask~=1.1.2
+pyproj
+pyreproj~=2.0.0
