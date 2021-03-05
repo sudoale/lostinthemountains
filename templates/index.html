@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html>
+
+  <head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styles.css') }}">>
+    <script src='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css' rel='stylesheet' />
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.4.10/leaflet.draw.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.4.10/leaflet.draw.js'></script>
+    <div id='map'></div>
+    <script>
+      let activeObstacle = [];
+      L.mapbox.accessToken = 'pk.eyJ1Ijoic3Vkb2FsZSIsImEiOiJja2xycmM0ajMwMnk4MndvM3hhbzZibWwyIn0.RuIhdlfw4W7vJhQjvOdr3A';
+
+      var map = L.mapbox.map('map')
+      .setView([46.89399, 8.73659], 15)
+      .addLayer(L.mapbox.styleLayer('mapbox://styles/mapbox/outdoors-v11'));
+
+      var featureGroup = L.featureGroup().addTo(map);
+
+      var drawControl = new L.Control.Draw({
+        draw: {
+             polygon: false,
+             marker: false,
+             rectangle: false,
+             circle: false
+         },
+        edit: {
+          featureGroup: featureGroup
+        }
+      }).addTo(map);
+
+      map.on('draw:created', function(e) {
+        featureGroup.addLayer(e.layer);
+        validatePolyline(e.layer);
+      });
+
+      map.on('draw:edited', function(e) {
+        for (var i = 0; i < activeObstacle.length; i++) {
+          activeObstacle[i].removeFrom(map);
+        }
+        e.layers.eachLayer(function(layer){
+           validatePolyline(layer);
+        });
+      });
+
+      function validatePolyline(layer){
+        request_data = {"geom": layer.toGeoJSON().geometry};
+        request = $.ajax({
+          url: "/validate",
+          type: "post",
+          contentType: "application/json",
+          data: JSON.stringify(request_data)
+        });
+        request.done(function (response, textStatus, jqXHR){
+          if(response.is_dangerous == false){
+            layer.setStyle({color :'green'});
+            alert("Route is safe");
+          } else {
+            layer.setStyle({color :'red'});
+            for (var i = 0; i < response.coordinates.length; i++) {
+              console.log(i);
+              console.log(response.coordinates[i]);
+              activeObstacle.push(L.circle(response.coordinates[i], 50).addTo(map));
+            }
+            alert("Take care, route is not safe");
+          }
+        });
+      }
+
+      const mapContainer = document.getElementById("map");
+      mapContainer.addEventListener("dragenter", addClassToDropTarget, false);
+      mapContainer.addEventListener("dragover", addClassToDropTarget, false);
+      mapContainer.addEventListener("drop", handleDrop, false);
+
+      function addClassToDropTarget(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        document.getElementById("map").classList.add("over");
+        return false;
+      }
+
+      function handleDrop(e) {
+        console.log(e);
+        e.preventDefault();
+        e.stopPropagation();
+        const files = e.dataTransfer.files;
+
+        if (files.length) {
+          for (let i = 0, file; (file = files[i]); i++) {
+            const reader = new FileReader();
+            console.log(file);
+
+            reader.onload = function (e) {
+              var parser = new DOMParser();
+              var xml = parser.parseFromString(reader.result,"text/xml");
+              const tracks = xml.getElementsByTagName("trkpt");
+              let coordinates = []
+              for (var i = 0; i < tracks.length; i++) {
+                  let point_coords = [tracks[i].getAttribute('lat'), tracks[i].getAttribute('lon')];
+                  coordinates.push(point_coords);
+              }
+              var polyline = L.polyline(coordinates, {color: 'blue'}).addTo(map);
+              featureGroup.addLayer(polyline);
+              map.fitBounds(polyline.getBounds());
+              validatePolyline(polyline);
+            };
+            reader.onerror = function (e) {
+              console.error("reading failed");
+            };
+            reader.readAsText(file);
+          }
+        } else {
+          const plainText = e.dataTransfer.getData("text/plain");
+          console.log(plainText);
+
+          if (plainText) {
+            console.log(plainText);
+          }
+        }
+        return false;
+      }
+
+    </script>
+  </body>
+
+</html>
