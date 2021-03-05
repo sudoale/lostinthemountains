@@ -1,7 +1,60 @@
-#map {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
+*{
+    padding: 0;
+    margin: 0;
+}
+
+html, body{
+    height: 100%;
+}
+
+.map-container{
+  display: flex;
   height: 100%;
+}
+
+.map{
+  border: 1px solid green;
+  flex-grow: 1;
+  order: 0;
+}
+
+.info-block{
+    background: white;
+    width: 33%;
+    min-width: 200px;
+    overflow: auto;
+}
+
+.content_container{
+    padding: 0 20px 20px 20px;
+}
+
+.content{
+    margin-top: 30px;
+}
+
+.file {
+  display: flex;
+  flex-flow: column;
+  margin-top: 1em;
+  cursor: move;
+  text-align: center;
+}
+.file:hover .material-icons {
+  color: darkorange;
+}
+.file:hover .filename {
+  font-weight: bold;
+}
+.file .material-icons {
+  font-size: 50px;
+  color: orange;
+}
+.file .material-icons:hover {
+  color: darkorange;
+}
+.file .filename {
+  margin-top: 0.5em;
+  font-size: 20px;
+  color: #333333;
 }
